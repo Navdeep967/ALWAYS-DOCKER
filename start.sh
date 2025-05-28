@@ -4,21 +4,22 @@ export DEBIAN_FRONTEND=noninteractive
 ln -fs /usr/share/zoneinfo/Asia/Kathmandu /etc/localtime
 dpkg-reconfigure -f noninteractive tzdata
 
-# Start tmate session in background
-tmate -S /tmp/tmate.sock new-session -d
+# Check if tmate session already exists
+if [ ! -S /tmp/tmate.sock ]; then
+  tmate -S /tmp/tmate.sock new-session -d
+fi
 tmate -S /tmp/tmate.sock wait tmate-ready
 
-# Show SSH and Web URLs
 echo "SSH Access:"
 tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
 echo "Web (read-write):"
 tmate -S /tmp/tmate.sock display -p '#{tmate_web}'
 
-# Keep-alive: Send 'echo "Nav Is Bestt"' to tmate every 60s
+# Send keep-alive keys periodically
 while true; do
   tmate -S /tmp/tmate.sock send-keys -t 0 "echo 'Nav Is Bestt'" C-m
+  tmate -S /tmp/tmate.sock send-keys -t 0 C-m
   sleep 60
 done &
 
-# Start dummy HTTP server to keep Render container active
 python3 -m http.server 8080
